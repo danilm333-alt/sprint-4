@@ -1,0 +1,28 @@
+-- nivell 1 
+-- ex1
+SELECT t.*
+FROM `sprint3_silver.transactions_clean` t
+JOIN `sprint3_silver.companies_clean`c ON t.business_id=c.company_id
+WHERE c.country="Germany" and 
+DATE(t.timestamp) > '2022-03-11' AND DATE(t.timestamp) < '2022-03-13';
+
+-- ex2
+--pas1
+CREATE OR REPLACE TABLE sprint3_silver.transactions_recent AS
+ SELECT*EXCEPT (timestamp),
+ TIMESTAMP_SUB(
+  CURRENT_TIMESTAMP(),
+  INTERVAL CAST(RAND()*50 AS INT64)DAY
+ )as timestamp
+FROM `sprint3-analytics-daniel-lopez.sprint3_silver.transactions_clean`;
+-- pas2
+CREATE OR REPLACE TABLE sprint3_gold.fact_transactions_optimized 
+PARTITION BY DATE(timestamp)
+CLUSTER BY business_id AS
+SELECT *,
+DATE(timestamp) as day,
+TIME(timestamp) as time
+FROM`sprint3_silver.transactions_recent`;
+
+
+
