@@ -41,18 +41,36 @@ WHERE t.declined = 0
 GROUP BY t.day;
 -- nivell 2
 -- ex1
--- pas1
 WITH VIP_Stats AS(
-  SELECT business_id, SUM(amount) AS despesa_total,
-  COUNT(transaction_id) AS numero_ingressos,
-  AVG(amount) AS tiquet_mitja,
-  MAX(amount)AS maxima_compra
-  FROM`sprint3-analytics-daniel-lopez.sprint3_gold.fact_transactions_optimized`
-  WHERE declined=1
-  GROUP BY business_id
-  HAVING despesa_total>500)
-  SELECT* FROM VIP_Stats
-  ORDER BY despesa_total DESC;
-
-
+  SELECT t.user_id, SUM(t.amount) AS total_gastat,
+  COUNT(t.transaction_id) AS num_compres,
+  ROUND(AVG(t.amount),2) AS tiquet_mig,
+  MAX(t.amount)AS max_compra
+  FROM`sprint3-analytics-daniel-lopez.sprint3_gold.fact_transactions_optimized`AS t
+  WHERE t.declined=1
+  GROUP BY t.user_id
+  HAVING total_gastat>500)
+  SELECT u.user_id, u.name,u.surname, u.email, num_compres, tiquet_mig, max_compra, total_gastat
+  FROM VIP_Stats
+  JOIN `sprint3-analytics-daniel-lopez.sprint3_silver.users_combined` AS u ON VIP_Stats.user_id=u.user_id
+  ORDER BY total_gastat DESC;
+--ex2
+SELECT 
+  day AS Data,
+  dinero_por_dia AS Vendes_Avui,
+  LAG(dinero_por_dia) OVER (ORDER BY day) AS Vendes_Ahir,
+  ROUND(
+    SAFE_DIVIDE(
+      dinero_por_dia - LAG(dinero_por_dia) OVER (ORDER BY day), 
+      LAG(dinero_por_dia) OVER (ORDER BY day)
+    ) * 100,
+  2) AS Diff_Percentual
+FROM `sprint3-analytics-daniel-lopez.sprint3_gold.mv_daily_sales`
+ORDER BY Data DESC;
+--ex3
+SELECT day AS Data,
+  ROUND(dinero_por_dia, 2) AS Vendes_del_Dia,
+  ROUND(SUM(dinero_por_dia) OVER (PARTITION BY EXTRACT(YEAR FROM day) ORDER BY day ASC),2) AS Vendes_Acumulades_YTD
+FROM `sprint3-analytics-daniel-lopez.sprint3_gold.mv_daily_sales`
+ORDER BY Data ASC;
 
