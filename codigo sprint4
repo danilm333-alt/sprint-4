@@ -47,7 +47,7 @@ WITH VIP_Stats AS(
   ROUND(AVG(t.amount),2) AS tiquet_mig,
   MAX(t.amount)AS max_compra
   FROM`sprint3-analytics-daniel-lopez.sprint3_gold.fact_transactions_optimized`AS t
-  WHERE t.declined=1
+  WHERE t.declined=0
   GROUP BY t.user_id
   HAVING total_gastat>500)
   SELECT u.user_id, u.name,u.surname, u.email, num_compres, tiquet_mig, max_compra, total_gastat
