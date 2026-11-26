@@ -23,6 +23,36 @@ SELECT *,
 DATE(timestamp) as day,
 TIME(timestamp) as time
 FROM`sprint3_silver.transactions_recent`;
+-- ex3
+-- pas 1
+SELECT *
+FROM sprint3_silver.transactions_recent AS t
+WHERE timestamp >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY);
+-- pas2
+SELECT *
+FROM `sprint3_gold.fact_transactions_optimized`AS t
+WHERE timestamp >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY);
+-- ex4 
+CREATE MATERIALIZED VIEW `sprint3_gold.mv_daily_sales` AS
+SELECT t.day, SUM(t.amount) AS dinero_por_dia,
+  COUNT(t.transaction_id) AS num_transacciones_por_dia
+FROM `sprint3_gold.fact_transactions_optimized` AS t
+WHERE t.declined = 0
+GROUP BY t.day;
+-- nivell 2
+-- ex1
+-- pas1
+WITH VIP_Stats AS(
+  SELECT business_id, SUM(amount) AS despesa_total,
+  COUNT(transaction_id) AS numero_ingressos,
+  AVG(amount) AS tiquet_mitja,
+  MAX(amount)AS maxima_compra
+  FROM`sprint3-analytics-daniel-lopez.sprint3_gold.fact_transactions_optimized`
+  WHERE declined=1
+  GROUP BY business_id
+  HAVING despesa_total>500)
+  SELECT* FROM VIP_Stats
+  ORDER BY despesa_total DESC;
 
 
 
